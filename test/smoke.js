@@ -151,6 +151,7 @@ async function main() {
     .map((l) => JSON.parse(l));
   const dl = argvLog.find((a) => a[0] === 'binaries' && a[1] === 'download');
   assert.ok(dl.includes(`--depot-store=${path.resolve(depot)}`), `CLI saw: ${JSON.stringify(dl)}`);
+  assert.ok(dl.some((a) => a.startsWith('--depot-download-activation-code-file=')), `CLI saw: ${JSON.stringify(dl)}`);
   assert.ok(
     fs.existsSync(path.join(depot, 'PROD', 'COMP', 'VCENTER', 'VCENTER-9.1.0.0.25000001.iso')),
     'downloaded file missing from depot'
@@ -179,6 +180,31 @@ async function main() {
     assert.strictEqual(res.status, 400, JSON.stringify(res.body));
     assert.ok(!fs.existsSync(marker), 'injected command ran!');
   }
+
+  step('switch to a download token: CLI gets --depot-download-token-file instead');
+  res = await api('/token', { method: 'POST', body: JSON.stringify({ token: 'FAKE-DOWNLOAD-TOKEN-5678', kind: 'token' }) });
+  assert.strictEqual(res.status, 200, JSON.stringify(res.body));
+  assert.strictEqual(res.body.kind, 'token');
+  assert.ok(!fs.existsSync(path.join(home, 'data', 'activation-code.txt')), 'activation code should be replaced');
+  res = await api('/binaries?version=9.1.0.0&sku=VCF&type=INSTALL');
+  assert.strictEqual(res.status, 200, JSON.stringify(res.body));
+  const lastList = fs
+    .readFileSync(path.join(home, 'data', 'cli', 'argv.jsonl'), 'utf8')
+    .trim()
+    .split('\n')
+    .map((l) => JSON.parse(l))
+    .filter((a) => a[0] === 'binaries' && a[1] === 'list')
+    .pop();
+  const tokenArg = lastList.find((a) => a.startsWith('--depot-download-token-file='));
+  assert.ok(tokenArg, `CLI saw: ${JSON.stringify(lastList)}`);
+  assert.ok(!lastList.some((a) => a.startsWith('--depot-download-activation-code-file=')));
+  assert.strictEqual(fs.readFileSync(tokenArg.split('=').slice(1).join('='), 'utf8').trim(), 'FAKE-DOWNLOAD-TOKEN-5678');
+  res = await api('/token', { method: 'POST', body: JSON.stringify({ token: 'x', kind: 'bogus' }) });
+  assert.strictEqual(res.status, 400);
+  res = await api('/token', { method: 'DELETE' });
+  assert.strictEqual(res.body.saved, false);
+  res = await api('/binaries?version=9.1.0.0&sku=VCF&type=INSTALL');
+  assert.ok(/activation code or download token/.test(res.body.error || ''), JSON.stringify(res.body));
 
   step('application settings round-trip');
   res = await api('/app-settings');

@@ -485,12 +485,47 @@ $('color-reset-btn').addEventListener('click', () => {
 });
 
 // ---------- Token / settings ----------
+const CREDENTIAL_LABELS = { activation: 'activation code', token: 'download token' };
+
+function selectedCredentialKind() {
+  const checked = document.querySelector('input[name="credential-kind"]:checked');
+  return checked ? checked.value : 'activation';
+}
+
+function syncCredentialPlaceholder() {
+  $('token-input').placeholder = `Paste ${CREDENTIAL_LABELS[selectedCredentialKind()]} here`;
+}
+
 async function refreshTokenStatus() {
   const status = await api('/token');
+  if (status.saved) {
+    const radio = document.querySelector(`input[name="credential-kind"][value="${status.kind}"]`);
+    if (radio) radio.checked = true;
+  }
+  syncCredentialPlaceholder();
   $('token-status').textContent = status.saved
-    ? `Saved (${status.preview}) — updated ${new Date(status.savedAt).toLocaleString()}`
-    : 'No activation code saved yet.';
+    ? `Using ${status.label.toLowerCase()} (${status.preview}) — updated ${new Date(status.savedAt).toLocaleString()}`
+    : 'No activation code or download token saved yet.';
 }
+
+document.querySelectorAll('input[name="credential-kind"]').forEach((el) =>
+  el.addEventListener('change', syncCredentialPlaceholder)
+);
+
+// Reads the file in the browser and drops its text into the box, so a token
+// file downloaded from the portal goes through the same Save path.
+$('token-file-input').addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  if (file.size > 64 * 1024) {
+    toast('That file is too large to be a token or activation code.', true);
+    e.target.value = '';
+    return;
+  }
+  $('token-input').value = (await file.text()).trim();
+  e.target.value = '';
+  toast(`Loaded ${file.name} — click Save to use it.`);
+});
 
 async function refreshDepotIdStatus() {
   const status = await api('/depot-id');
@@ -567,9 +602,10 @@ $('settings-nav-btn').addEventListener('click', () => {
 $('token-save-btn').addEventListener('click', async () => {
   const token = $('token-input').value;
   try {
-    await api('/token', { method: 'POST', body: JSON.stringify({ token }) });
+    const kind = selectedCredentialKind();
+    await api('/token', { method: 'POST', body: JSON.stringify({ token, kind }) });
     $('token-input').value = '';
-    toast('Activation code saved.');
+    toast(`${kind === 'token' ? 'Download token' : 'Activation code'} saved.`);
     await refreshTokenStatus();
     loadReleases(true);
   } catch (err) {
@@ -580,7 +616,7 @@ $('token-save-btn').addEventListener('click', async () => {
 $('token-clear-btn').addEventListener('click', async () => {
   try {
     await api('/token', { method: 'DELETE' });
-    toast('Activation code cleared.');
+    toast('Credential cleared.');
     await refreshTokenStatus();
   } catch (err) {
     toast(err.message, true);

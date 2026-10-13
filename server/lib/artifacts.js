@@ -1,6 +1,6 @@
 const { runCli } = require('./cliRunner');
 const { parseTable } = require('./tableParser');
-const { TOKEN_FILE } = require('./config');
+const { credentialArgs } = require('./tokenStore');
 
 // --- CLI >= 9.1.1: `artifacts list` / `artifacts download` -----------------
 //
@@ -98,7 +98,7 @@ async function listArtifacts({ version, sku = 'VCF', category, component }) {
   const args = [
     'artifacts',
     'list',
-    `--depot-download-activation-code-file=${TOKEN_FILE}`,
+    ...credentialArgs(),
     `--vcf-version=${version}`,
     `--sku=${sku}`,
   ];

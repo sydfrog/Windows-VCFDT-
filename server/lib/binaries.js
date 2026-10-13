@@ -4,7 +4,7 @@ const { runCli } = require('./cliRunner');
 const { parseTable } = require('./tableParser');
 const { cliAtLeast } = require('./cliVersion');
 const { matchesVersion, isExcludedFor, COMP_ROOT } = require('./depotIndex');
-const { TOKEN_FILE } = require('./config');
+const { credentialArgs } = require('./tokenStore');
 
 // CLI >= 9.1.1 defaults `binaries list` to latest=true - one row per
 // component at its newest build within the queried line - so browsing e.g.
@@ -23,7 +23,7 @@ async function queryVersion(version, sku, types) {
       runCli([
         'binaries',
         'list',
-        `--depot-download-activation-code-file=${TOKEN_FILE}`,
+        ...credentialArgs(),
         `--vcf-version=${version}`,
         `--sku=${sku}`,
         `--type=${t}`,

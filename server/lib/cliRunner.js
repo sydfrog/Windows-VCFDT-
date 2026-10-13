@@ -1,7 +1,8 @@
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const { CLI_BIN, TOKEN_FILE, XDG_DATA_HOME, CLI_JAVA_TOOL_OPTIONS } = require('./config');
+const { CLI_BIN, XDG_DATA_HOME, CLI_JAVA_TOOL_OPTIONS } = require('./config');
+const { hasCredential } = require('./tokenStore');
 const { spawnLauncher, killTree } = require('./platform');
 
 // JAVA_TOOL_OPTIONS is read by the JVM directly regardless of Broadcom's
@@ -54,9 +55,9 @@ class CliError extends Error {
 }
 
 function assertTokenPresent() {
-  if (!fs.existsSync(TOKEN_FILE)) {
+  if (!hasCredential()) {
     throw new CliError(
-      'No activation code configured yet. Add one in Settings before browsing or downloading binaries.'
+      'No activation code or download token configured yet. Add one in Settings before browsing or downloading binaries.'
     );
   }
 }

@@ -46,10 +46,23 @@ if (args[0] === 'configuration' && args[1] === 'generate') {
   process.exit(0);
 }
 
-const tokenFile = opt('depot-download-activation-code-file');
-if (tokenFile && !fs.existsSync(tokenFile)) {
-  console.error(`ERROR: activation code file not found: ${tokenFile}`);
+// Like the real CLI: exactly one credential flag on depot commands.
+const activationFile = opt('depot-download-activation-code-file');
+const downloadTokenFile = opt('depot-download-token-file');
+if (activationFile && downloadTokenFile) {
+  console.error('ERROR: specify either an activation code file or a download token file, not both');
   process.exit(2);
+}
+const credFile = activationFile || downloadTokenFile;
+if (['binaries', 'artifacts', 'releases'].includes(args[0])) {
+  if (!credFile) {
+    console.error('ERROR: no depot credential given');
+    process.exit(2);
+  }
+  if (!fs.existsSync(credFile)) {
+    console.error(`ERROR: credential file not found: ${credFile}`);
+    process.exit(2);
+  }
 }
 
 if (args[0] === 'binaries' && args[1] === 'list') {

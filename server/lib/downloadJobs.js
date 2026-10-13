@@ -2,7 +2,8 @@ const path = require('path');
 const fs = require('fs');
 const { EventEmitter } = require('events');
 const { streamCli } = require('./cliRunner');
-const { TOKEN_FILE, DEPOT_DIR, DOWNLOAD_LOGS_DIR } = require('./config');
+const { DEPOT_DIR, DOWNLOAD_LOGS_DIR } = require('./config');
+const { credentialArgs } = require('./tokenStore');
 const depotIndex = require('./depotIndex');
 const artifactsIndex = require('./artifactsIndex');
 const jobStore = require('./jobStore');
@@ -132,7 +133,7 @@ function runBinariesDownload(jobId, ids, binaries, emit) {
     [
       'binaries',
       'download',
-      `--depot-download-activation-code-file=${TOKEN_FILE}`,
+      ...credentialArgs(),
       `--id=${ids.join(',')}`,
       `--depot-store=${DEPOT_DIR}`,
     ],
@@ -171,7 +172,7 @@ async function runArtifactsDownload(jobId, binaries, opts, emit) {
     const args = [
       'artifacts',
       'download',
-      `--depot-download-activation-code-file=${TOKEN_FILE}`,
+      ...credentialArgs(),
       `--sku=${sku}`,
       `--vcf-version=${vcfVersion}`,
       `--depot-store=${DEPOT_DIR}`,

@@ -39,8 +39,15 @@ Java, no Node.js, no Docker.
    `vcf-depot` volume. Save, then let the app restart.
 4. **Settings → Upload CLI.** Upload the `vcf-download-tool-*.tar.gz` from
    the Broadcom portal. Don't extract it first.
-5. **Software depot ID** and **activation code**: set these up the same way
-   as in the [original README](https://github.com/leaha00/vcf-download-tool-gui#first-time-setup).
+5. **Depot credential.** Settings → Depot credential takes **either** of the
+   two ways the CLI can sign in to Broadcom. Pick one; saving it replaces
+   the other:
+   - **Activation code (auth key)**, passed as
+     `--depot-download-activation-code-file`. It must be registered against
+     the **Software depot ID**; set that up as described in the
+     [original README](https://github.com/leaha00/vcf-download-tool-gui#first-time-setup).
+   - **Download token**, passed as `--depot-download-token-file`. Paste it
+     in, or use *load it from a file*.
 
 After that, everything works as it does in the Docker version.
 
@@ -48,7 +55,7 @@ After that, everything works as it does in the Docker version.
 
 | What | Docker version | Windows version |
 |---|---|---|
-| Activation code, depot ID, CLI, job history, download logs | `vcf-token` volume (`/data/token`) | `%LOCALAPPDATA%\VCF-Download-Tool-GUI\data` |
+| Activation code or download token, depot ID, CLI, job history, download logs | `vcf-token` volume (`/data/token`) | `%LOCALAPPDATA%\VCF-Download-Tool-GUI\data` |
 | Downloaded binaries | `vcf-depot` volume (`/mnt/vcf-depot`) | Settings → Application → Depot folder (default `%USERPROFILE%\vcf-depot`) |
 | Port, Java heap, etc. | `docker-compose.yml` environment | Settings → Application, saved to `%LOCALAPPDATA%\VCF-Download-Tool-GUI\settings.json` |
 | App log | `docker logs` | `%LOCALAPPDATA%\VCF-Download-Tool-GUI\logs\app.log` |

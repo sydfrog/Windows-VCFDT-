@@ -1,8 +1,8 @@
 const { runCli } = require('./cliRunner');
+const { credentialArgs } = require('./tokenStore');
 const { parseTable } = require('./tableParser');
 const { cliAtLeast } = require('./cliVersion');
 const {
-  TOKEN_FILE,
   RELEASE_SCAN_START,
   LEGACY_RELEASE_VERSIONS,
   RELEASE_CACHE_TTL_MS,
@@ -37,7 +37,7 @@ async function scanReleases() {
   const { stdout } = await runCli([
     'binaries',
     'list',
-    `--depot-download-activation-code-file=${TOKEN_FILE}`,
+    ...credentialArgs(),
     `--vcf-version=${RELEASE_SCAN_START}..`,
     '--sku=VCF',
     '--type=INSTALL',
@@ -96,7 +96,7 @@ async function scanLegacyReleases() {
       const { stdout } = await runCli([
         'binaries',
         'list',
-        `--depot-download-activation-code-file=${TOKEN_FILE}`,
+        ...credentialArgs(),
         `--vcf-version=${version}`,
         '--sku=VCF',
         '--type=INSTALL',
@@ -170,7 +170,7 @@ async function scanViaReleasesList() {
   const { stdout } = await runCli([
     'releases',
     'list',
-    `--depot-download-activation-code-file=${TOKEN_FILE}`,
+    ...credentialArgs(),
   ]);
 
   const versions = stdout

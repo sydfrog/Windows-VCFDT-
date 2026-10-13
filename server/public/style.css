@@ -577,3 +577,7 @@ select.cs-native {
 #app-depot-dir-input { width: 100%; box-sizing: border-box; }
 #app-port-input { width: 7rem; }
 #app-java-opts-input { min-width: 14rem; }
+.credential-kinds { display: flex; flex-direction: column; gap: 0.25rem; margin: 0.5rem 0; }
+.credential-kinds code { font-size: 0.75rem; }
+.credential-file-row { align-items: center; gap: 0.5rem; margin-top: 0.5rem; }
+.credential-file-row .field-label { margin: 0; }

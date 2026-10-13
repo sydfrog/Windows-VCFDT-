@@ -10,6 +10,8 @@ const settings = appSettings.active;
 // activation code, depot ID, uploaded CLI, job history, download logs.
 const TOKEN_DIR = process.env.TOKEN_DIR || path.join(appSettings.APP_HOME, 'data');
 const TOKEN_FILE = path.join(TOKEN_DIR, 'activation-code.txt');
+// Alternative credential: a depot download token (see lib/tokenStore.js).
+const DOWNLOAD_TOKEN_FILE = path.join(TOKEN_DIR, 'download-token.txt');
 
 // The CLI is uploaded through the GUI (see lib/cliInstall.js) and lives
 // inside TOKEN_DIR. cli-staging is where an upload is extracted and
@@ -91,6 +93,7 @@ module.exports = {
   CLI_LOG_DIR,
   TOKEN_DIR,
   TOKEN_FILE,
+  DOWNLOAD_TOKEN_FILE,
   XDG_DATA_HOME,
   DEPOT_ID_FILE,
   DEPOT_DIR,

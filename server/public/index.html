@@ -213,6 +213,7 @@
 
         <h2 style="margin-top:1.5rem">Software depot ID</h2>
         <p class="hint">
+          Required when you sign in with an activation code.
           A per-installation ID the activation code below must be registered against on the
           Broadcom portal. If you've used the CLI elsewhere before, reuse that same ID here —
           generating a new one won't work with an activation code issued for the old one.
@@ -226,13 +227,30 @@
           <button id="depot-id-generate-btn" class="btn btn-ghost btn-small">Generate a new one instead</button>
         </div>
 
-        <h2 style="margin-top:1.5rem">Depot activation code</h2>
+        <h2 style="margin-top:1.5rem">Depot credential</h2>
         <p class="hint">
-          Stored in this app's data folder (<code id="token-data-dir">%LOCALAPPDATA%\VCF-Download-Tool-GUI\data</code>), separate from the downloaded binaries.
-          Generate one on the Broadcom download portal, tied to the depot ID above.
+          The CLI signs in to the Broadcom depot with <strong>either</strong> an activation code
+          (auth key, tied to the software depot ID above) <strong>or</strong> a download token —
+          use whichever your Broadcom portal account gives you. Only one is kept: saving one
+          replaces the other. Stored in this app's data folder
+          (<code id="token-data-dir">%LOCALAPPDATA%\VCF-Download-Tool-GUI\data</code>), separate from the downloaded binaries.
         </p>
+        <div class="credential-kinds" role="radiogroup" aria-label="Credential type">
+          <label class="checkbox-row">
+            <input type="radio" name="credential-kind" value="activation" checked />
+            Activation code (auth key) — <code>--depot-download-activation-code-file</code>
+          </label>
+          <label class="checkbox-row">
+            <input type="radio" name="credential-kind" value="token" />
+            Download token — <code>--depot-download-token-file</code>
+          </label>
+        </div>
         <div id="token-status" class="meta"></div>
         <textarea id="token-input" rows="3" placeholder="Paste activation code here"></textarea>
+        <div class="row credential-file-row">
+          <label class="field-label" for="token-file-input">…or load it from a file:</label>
+          <input id="token-file-input" type="file" accept=".txt,.token,text/plain" />
+        </div>
         <div class="modal-actions">
           <button id="token-clear-btn" class="btn btn-ghost">Clear</button>
           <div class="spacer"></div>

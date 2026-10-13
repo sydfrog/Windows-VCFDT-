@@ -170,7 +170,8 @@ router.get('/token', (req, res) => {
 
 router.post('/token', (req, res) => {
   try {
-    tokenStore.save(req.body && req.body.token);
+    const body = req.body || {};
+    tokenStore.save(body.token, body.kind || 'activation');
     res.json(tokenStore.getStatus());
   } catch (err) {
     handleError(res, err);
