@@ -1,0 +1,38 @@
+name: VCF Download Tool GUI (Windows)
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - run: npm ci
+
+      - name: Smoke test (node server/index.js)
+        run: node test/smoke.js
+
+      - name: Build single-file exe
+        run: npm run build
+
+      - name: Smoke test (packaged exe)
+        run: node test/smoke.js --exe=dist\VCF-Download-Tool-GUI.exe
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: VCF-Download-Tool-GUI-windows-x64
+          path: dist/VCF-Download-Tool-GUI.exe
+          if-no-files-found: error
