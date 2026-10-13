@@ -99,6 +99,43 @@ npm run build          # -> dist\VCF-Download-Tool-GUI.exe
 npm test               # end-to-end smoke test against a fake CLI
 ```
 
+### `UNABLE_TO_GET_ISSUER_CERT_LOCALLY` during `npm install`
+
+This error means your network inspects HTTPS traffic. Your company's proxy
+re-signs the connection with a corporate certificate, which Windows trusts but
+Node.js and npm don't by default. (You only need `npm install` to build the
+exe. To just use the app, download the prebuilt exe instead.)
+
+**Option 1: Node.js 22.15 or later.** Tell Node to use the Windows
+certificate store:
+
+```powershell
+node -v                                   # must be v22.15.0 or newer
+$env:NODE_OPTIONS = "--use-system-ca"
+npm install
+npm run build
+```
+
+**Option 2: any Node version.** Export the Windows trusted root certificates
+to a file once, then point Node at it. `NODE_EXTRA_CA_CERTS` adds these
+certificates to Node's built-in list instead of replacing it:
+
+```powershell
+$pem = Get-ChildItem Cert:\LocalMachine\Root, Cert:\CurrentUser\Root | ForEach-Object {
+  "-----BEGIN CERTIFICATE-----`n" + [Convert]::ToBase64String($_.RawData, 'InsertLineBreaks') + "`n-----END CERTIFICATE-----"
+}
+$pem | Set-Content -Encoding ascii "$env:USERPROFILE\windows-roots.pem"
+[Environment]::SetEnvironmentVariable("NODE_EXTRA_CA_CERTS", "$env:USERPROFILE\windows-roots.pem", "User")
+# open a new PowerShell window, then:
+npm install
+```
+
+Don't use `npm config set strict-ssl false`. It turns off certificate checks
+completely instead of fixing the trust problem.
+
+The same TLS inspection affects the VCF CLI's own downloads. See
+[Proxies and TLS inspection](#proxies-and-tls-inspection) above.
+
 The build bundles the server with esbuild, embeds the web UI, and injects
 both into an official `node.exe` using Node's
 [single executable application](https://nodejs.org/api/single-executable-applications.html)
